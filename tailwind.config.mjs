@@ -14,6 +14,11 @@ export default {
         "custom-back-ground": "url('/images/pattern-randomized.svg')",
         "custom-back-ground-two": "url('/images/pattern-randomized-two.svg')",
       },
+      colors: {
+        zinc: {
+          850: "#262626",
+        },
+      },
     },
   },
   plugins: [require("daisyui"), require("@tailwindcss/typography")],

@@ -98,8 +98,8 @@ const mockEvents: MockEvent[] = [
 ];
 
 export default function EventsCalendar({ events }: EventsCalendarProps) {
-  const [displayMonth, setDisplayMonth] = useState(new Date().getMonth());
-  const [displayYear, setDisplayYear] = useState(new Date().getFullYear());
+  const [displayMonth, setDisplayMonth] = useState(); // June (0-indexed)
+  const [displayYear, setDisplayYear] = useState(2026);
 
   // Combine real and mock events
   const allEvents = useMemo(() => {
