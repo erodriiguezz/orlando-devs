@@ -11,8 +11,8 @@ interface EventsCalendarProps {
 export default function EventsCalendar({
   initialEvents = [],
 }: EventsCalendarProps) {
-  const [displayMonth, setDisplayMonth] = useState(5); // June (0-indexed)
-  const [displayYear, setDisplayYear] = useState(2026);
+  const [displayMonth, setDisplayMonth] = useState(new Date().getMonth()); // June (0-indexed)
+  const [displayYear, setDisplayYear] = useState(new Date().getFullYear());
   const [events, setEvents] = useState<LumaEvent[]>(initialEvents);
   const [isLoading, setIsLoading] = useState(false);
 
