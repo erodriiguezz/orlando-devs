@@ -1,17 +1,12 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
-import EventsHeader from "../components/EventsHeader.astro";
 import EventsCalendar from "../ReactComponents/EventsCalendar.tsx";
-import EventsFooter from "../components/EventsFooter.astro";
-import { getCollection } from "astro:content";
+import { fetchLumaEvents } from "../services/lumaService";
 
-const events = await getCollection("events");
+// Fetch events data
+const events = await fetchLumaEvents();
 ---
 
-<MainLayout title="Events Calendar - Orlando Devs">
-  <EventsHeader />
-
-  <EventsCalendar client:load events={events} />
-
-  <EventsFooter />
+<MainLayout title="Orlando Devs - Events">
+  <EventsCalendar client:load initialEvents={events} />
 </MainLayout>

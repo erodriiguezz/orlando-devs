@@ -1,136 +1,47 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import type { CollectionEntry } from "astro:content";
-
-interface MockEvent {
-  id: string;
-  groupName: string;
-  subject: string;
-  date: string;
-  slug: string;
-}
+import React, { useState, useEffect, useMemo } from "react";
+import type { LumaEvent } from "../services/lumaService";
+import { fetchLumaEvents } from "../services/lumaService";
 
 interface EventsCalendarProps {
-  events: CollectionEntry<"events">[];
+  initialEvents?: LumaEvent[];
 }
 
-// Mock event data for demonstration
-const mockEvents: MockEvent[] = [
-  {
-    id: "1",
-    groupName: "UX/UI",
-    subject: "Design & CSS",
-    date: "2026-06-04",
-    slug: "design-css",
-  },
-  {
-    id: "2",
-    groupName: "Web Devs",
-    subject: "Co-Working",
-    date: "2026-06-08",
-    slug: "web-devs-coworking",
-  },
-  {
-    id: "3",
-    groupName: "Web Devs",
-    subject: "Astro",
-    date: "2026-06-11",
-    slug: "web-devs-astro",
-  },
-  {
-    id: "4",
-    groupName: "UX/UI",
-    subject: "Feedback",
-    date: "2026-06-15",
-    slug: "ux-feedback",
-  },
-  {
-    id: "5",
-    groupName: "Node",
-    subject: "NodeJS",
-    date: "2026-06-18",
-    slug: "nodejs",
-  },
-  {
-    id: "6",
-    groupName: "Orlando Devs",
-    subject: "Planning",
-    date: "2026-06-20",
-    slug: "planning",
-  },
-  {
-    id: "7",
-    groupName: "Ruby",
-    subject: "Rails",
-    date: "2026-06-25",
-    slug: "rails",
-  },
-  {
-    id: "8",
-    groupName: "Orlando Devs",
-    subject: "Networking",
-    date: "2026-07-11",
-    slug: "networking",
-  },
-  // Previous month events
-  {
-    id: "9",
-    groupName: "Frontend Devs",
-    subject: "React Hooks",
-    date: "2026-05-10",
-    slug: "react-hooks",
-  },
-  {
-    id: "10",
-    groupName: "Orlando JS",
-    subject: "JavaScript Q&A",
-    date: "2026-05-15",
-    slug: "js-qa",
-  },
-  {
-    id: "11",
-    groupName: "Web Devs",
-    subject: "Tailwind Workshop",
-    date: "2026-05-22",
-    slug: "tailwind",
-  },
-];
-
-export default function EventsCalendar({ events }: EventsCalendarProps) {
-  const [displayMonth, setDisplayMonth] = useState(); // June (0-indexed)
+export default function EventsCalendar({
+  initialEvents = [],
+}: EventsCalendarProps) {
+  const [displayMonth, setDisplayMonth] = useState(5); // June (0-indexed)
   const [displayYear, setDisplayYear] = useState(2026);
+  const [events, setEvents] = useState<LumaEvent[]>(initialEvents);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Combine real and mock events
-  const allEvents = useMemo(() => {
-    const eventMap = new Map<string, any[]>();
+  // Fetch events on component mount
+  useEffect(() => {
+    if (initialEvents.length === 0) {
+      setIsLoading(true);
+      fetchLumaEvents()
+        .then(setEvents)
+        .catch((error) => {
+          console.error("Failed to load events:", error);
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [initialEvents]);
 
-    // Add real events
-    events.forEach((event: any) => {
-      const dateStr = event.data.date.toISOString().split("T")[0];
-      if (!eventMap.has(dateStr)) {
-        eventMap.set(dateStr, []);
+  // Map events to dates
+  const eventsByDate = useMemo(() => {
+    const map = new Map<string, LumaEvent[]>();
+    events.forEach((event) => {
+      const dateStr = new Date(event.event.start_at)
+        .toISOString()
+        .split("T")[0];
+      if (!map.has(dateStr)) {
+        map.set(dateStr, []);
       }
-      eventMap.get(dateStr)!.push({
-        groupName: event.data.groupName,
-        subject: event.data.subject,
-        slug: event.slug,
-      });
+      map.get(dateStr)!.push(event);
     });
-
-    // Add mock events
-    mockEvents.forEach((event) => {
-      if (!eventMap.has(event.date)) {
-        eventMap.set(event.date, []);
-      }
-      eventMap.get(event.date)!.push({
-        groupName: event.groupName,
-        subject: event.subject,
-        slug: event.slug,
-      });
-    });
-
-    return eventMap;
+    return map;
   }, [events]);
 
   const firstDay = new Date(displayYear, displayMonth, 1);
@@ -160,12 +71,12 @@ export default function EventsCalendar({ events }: EventsCalendarProps) {
 
   const weekDays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
-  const getEventsForDay = (day: number | null): any[] => {
+  const getEventsForDay = (day: number | null): LumaEvent[] => {
     if (!day) return [];
     const dateStr = new Date(displayYear, displayMonth, day)
       .toISOString()
       .split("T")[0];
-    return allEvents.get(dateStr) || [];
+    return eventsByDate.get(dateStr) || [];
   };
 
   const handlePrev = () => {
@@ -194,6 +105,9 @@ export default function EventsCalendar({ events }: EventsCalendarProps) {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-12">
+      {isLoading && (
+        <div className="text-center text-zinc-400 mb-4">Loading events...</div>
+      )}
       <div className="border border-zinc-900 rounded-xl bg-zinc-950 overflow-hidden">
         {/* Calendar Header */}
         <div className="p-4 bg-zinc-900/30 border-b border-zinc-900 flex items-center justify-between">
@@ -258,13 +172,15 @@ export default function EventsCalendar({ events }: EventsCalendarProps) {
                   {dayEvents.slice(0, 2).map((event, eventIndex) => (
                     <a
                       key={`${day}-${eventIndex}`}
-                      href={`/events/${event.slug}`}
+                      href={event.event.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="w-full text-left truncate text-[10px] px-2 py-1.5 rounded bg-zinc-900 hover:bg-white hover:text-zinc-950 text-zinc-300 border border-zinc-850 transition-all font-medium block"
                     >
                       <span className="text-[8px] opacity-60 block uppercase text-zinc-400 tracking-tighter leading-none mb-0.5">
-                        {event.groupName}
+                        Event
                       </span>
-                      {event.subject}
+                      {event.event.name}
                     </a>
                   ))}
                   {dayEvents.length > 2 && (
