@@ -2,7 +2,10 @@
 import MainLayout from "../layouts/MainLayout.astro";
 ---
 
-<MainLayout title="404 - Page Not Found">
+<MainLayout
+  title="404 - Page Not Found"
+  description="The page you are looking for does not exist. Please check the URL or return to the homepage."
+>
   <div class="flex flex-col items-center justify-center gap-8 min-h-screen">
     <img src="/images/error.png" alt="404" class="mt-10 h-96 w-96" />
     <div class="text-5xl text-center text-slate-300">Page Not Found</div>

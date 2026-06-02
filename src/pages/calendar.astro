@@ -7,6 +7,9 @@ import { fetchLumaEvents } from "../services/lumaService";
 const events = await fetchLumaEvents();
 ---
 
-<MainLayout title="Orlando Devs - Events">
+<MainLayout
+  title="Orlando Devs - Events"
+  description="Discover upcoming events for Orlando Devs, a community of developers in the Greater Orlando area. Join us for meetups, workshops, and more!"
+>
   <EventsCalendar client:load initialEvents={events} />
 </MainLayout>
