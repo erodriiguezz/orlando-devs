@@ -130,7 +130,7 @@ export default function EventsCalendar({
   }, [sortedEvents, selectedDay, displayMonth, displayYear]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-12 flex flex-col-reverse  md:flex-row gap-12">
+    <div className="w-full min-h-screen max-w-7xl mx-auto px-4 md:px-8 py-12 flex flex-col-reverse  md:flex-row gap-12">
       <div className="w-full flex flex-col gap-4">
         {filteredEvents.length === 0 ? (
           <div className=" text-zinc-400">
